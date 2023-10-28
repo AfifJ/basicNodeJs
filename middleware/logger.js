@@ -28,9 +28,7 @@ const logger = (req, res, next) => {
   console.log(
     req.method +
       ' ' +
-      req.path +
-      ' ' +
-      format(new Date(), 'dd/mm/yyy HH:mm:ss:SS')
+      req.path
   );
   next();
 };
