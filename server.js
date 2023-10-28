@@ -10,9 +10,6 @@ const PORT = process.env.PORT || 3500;
 // custom middleware to log method and url
 app.use(logger);
 
-// static folder like public
-app.use(express.static(path.join(__dirname, 'public')));
-
 // built in middleware express to handle urlencoded data
 // u can say: form data
 // 'content-type: application/x-www-form-urlencoded'
@@ -24,52 +21,22 @@ app.use(express.json());
 // cors rule
 app.use(cors(corsOptions));
 
-// index
-app.get('^/$|/index(.html)?', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'index.html'));
-});
+// static folder like public
+app.use('/', express.static(path.join(__dirname, 'public')));
+app.use('/subdir', express.static(path.join(__dirname, 'public')));
 
-app.get(
-  '/hello(.html)?',
-  (req, res, next) => {
-    console.log('Hello ...');
-    next();
-  },
-  (req, res) => {
-    res.send('Hello on console');
-  }
-);
-
-const one = (req, res, next) => {
-  console.log('one');
-  next();
-};
-const two = (req, res, next) => {
-  console.log('two');
-  next();
-};
-const three = (req, res) => {
-  console.log('three');
-  res.send('Chain finished');
-};
-
-app.get('/chain(.html)?', [one, two, three]);
-
-app.get('/new-page(.html)?', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'new-page.html'));
-});
-
-app.get('/old-page(.html)?', (req, res) => {
-  res.redirect(301, 'new-page');
-});
+// routes
+app.use('/', require('./routes/root'));
+app.use('/subdir', require('./routes/subdir'));
+app.use('/employees', require('./routes/api/employees'));
 
 // 404 not found
 app.all('*', (req, res) => {
   res.status(404); /* not found */
   // not found in html (browser) or json (ex: postman)
-  if (req.accepted('html')) {
+  if (req.accepts('html')) {
     res.sendFile(path.join(__dirname, 'views', '404.html'));
-  } else if (req.accepted('json')) {
+  } else if (req.accepts('json')) {
     res.json({ error: '404 Not Found Page' });
   } else {
     res.type('txt').send('404 Not Found Page');
